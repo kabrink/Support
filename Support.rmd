@@ -1,0 +1,186 @@
+---
+title: "Support"
+author: "Kimberly A. Brink"
+date: '`r format(Sys.Date(),"%B %d, %Y")`'
+output: html_document
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r install_libraries}
+library(lubridate)
+library(Hmisc)
+```
+
+```{r standard_error}
+s.error <- function(x) sd(x)/sqrt(length(x))
+```
+
+```{r load_file}
+#detach(support)
+#filename="/Volumes/lsa-research01/ALL STUDIES/Current Studies/Support/Support 3.0/Support - Data v3.0.sav"
+#support <- spss.get(filename,datevars=c("DOB","DOT"))
+
+filename="/Volumes/lsa-research01/ALL STUDIES/Current Studies/Support/Support 3.0/Support - Data v3.0.sav"
+support <- spss.get(filename,datevars=c("DOB","DOT"))
+
+```
+
+```{r calculate_variables}
+support$Age = (year(as.period(new_interval(support$DOB, support$DOT)))*12) + month(as.period(new_interval(support$DOB, support$DOT))) + (day(as.period(new_interval(support$DOB, support$DOT)))/30)
+support = support[which(support$DOT>='2016-01-13'),]
+
+support$Crawl2 = ifelse(support$Crawl==levels(support$Crawl)[5], 3, ifelse(support$Crawl==levels(support$Crawl)[4], 2, ifelse(support$Crawl==levels(support$Crawl)[3], 1, ifelse(support$Crawl==levels(support$Crawl)[2], 0, NA))))
+```
+
+###Demographics.
+There were `r length(support$SubID)` participants.
+
+```{r computer_error}
+support$ContactTest.Average = (support$ContactTest1+support$ContactTest2+support$ContactTest3)/3
+support$NoContactTest.Average = (support$NoContactTest1+support$NoContactTest2+support$NoContactTest3)/3
+
+support = support[which(support$ContactTest.Average!='NA'),]
+support = support[which(support$NoContactTest.Average!='NA'),]
+```
+
+```{r computer_error2}
+#support = support[which((support$ContactTest1 >= 4)&(support$ContactTest2 >= 4)&(support$ContactTest3 >= 4)&(support$NoContactTest1 >= 4)&(support$NoContactTest2 >= 4)&(support$NoContactTest3 >= 4)),]
+
+support = support[which((support$ContactTest1 >= 4)&(support$NoContactTest1 >= 4)),]
+#support = support[which((support$ContactTest2 >= 4)&(support$NoContactTest2 >= 4)),]
+#support = support[which((support$ContactTest3 >= 4)&(support$NoContactTest3 >= 4)),]
+```
+
+```{r outliers}
+# averages = append(support$ContactTest.Average, support$NoContactTest.Average)
+# support = support[which(support$ContactTest.Average <= (mean(averages)+(2*sd(averages)))),]
+# support = support[which(support$NoContactTest.Average <= (mean(averages)+(2*sd(averages)))),]
+# support = support[which(support$ContactTest.Average >= (mean(averages)-(2*sd(averages)))),]
+# support = support[which(support$NoContactTest.Average >= (mean(averages)-(2*sd(averages)))),]
+```
+
+Now there are `r length(support$SubID)` participants after removing for computer error and outliers. 
+
+```{r crawling}
+#support = support[which(support$Crawl2>0),]
+#support = support[which(support$Age>=6.5),]
+```
+
+Now there are `r length(support$SubID)` participants after removing for crawling. 
+
+```{r demographics}
+attach(support)
+
+isGirl <- support$Sex == "Female"
+```
+
+The average age of the sample is `r round(mean(Age), digits = 2)` months.
+
+The minimum age of the sample is `r round(min(Age), digits = 2)` months.
+
+The maximum age of the sample is `r round(max(Age), digits = 2)` months.
+
+There are `r sum(isGirl)` females in the sample.
+
+The first date of test was `r min(DOT)`.
+
+The most recent date of test was `r max(DOT)`.
+
+#Tests for normality
+```{r boxplots}
+#plot(c(NoContactTest1, NoContactTest2,NoContactTest3,ContactTest1,ContactTest2,ContactTest3))
+```
+```{r histograms, fig.width = 8, fig.height = 5}
+hist(NoContactTest1)
+hist(ContactTest1)
+hist(NoContactTest2)
+hist(ContactTest2)
+hist(NoContactTest3)
+hist(ContactTest3)
+```
+
+#Bar Graph Within, All participants
+```{r barplot, fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
+medians <- matrix(c(median(ContactTest1),median(ContactTest2),median(ContactTest3),median(NoContactTest1),median(NoContactTest2),median(NoContactTest3)),ncol=3,byrow=TRUE)
+colnames(medians) <- c("Test Trial 1","Test Trial 2","Test Trial 3")
+rownames(medians) <- c("Contact","No Contact")
+medians <- as.table(medians)
+
+g.range = range(0,ceiling(max(medians))+5)
+
+plot.new()
+barCenters <- barplot(medians, col=c("darkblue","red"), legend = rownames(medians), ylab = "Median Looking Time (sec)", beside = TRUE, ylim=g.range)
+text(barCenters,medians+1.5,label=medians)
+```
+
+#Wilcox Test
+Because the distribution of the Test trial is not normal we will use the non-parametric within samples t-test.
+```{r}
+
+t1 = wilcox.test(NoContactTest1,ContactTest1,paired=TRUE)
+Z1 = round(qnorm(t1$p.value/2),digits = 2)
+p1 = round(t1$p.value, digits = 2)
+p1 <- ifelse(p1<0.001, 0.001, ifelse(p1<0.01, 0.01, ifelse(p1<0.05,0.05,p1)))
+
+ t2 = wilcox.test(NoContactTest2,ContactTest2,paired=TRUE)
+ Z2 = round(qnorm(t2$p.value/2),digits = 2)
+ p2 = round(t2$p.value, digits = 2)
+ p2 <- ifelse(p2<0.001, 0.001, ifelse(p2<0.01, 0.01, ifelse(p2<0.05,0.05,p2)))
+
+ t3 = wilcox.test(NoContactTest3,ContactTest3,paired=TRUE)
+ Z3 = round(qnorm(t3$p.value/2),digits = 2)
+ p3 = round(t3$p.value, digits = 2)
+ p3 <- ifelse(p3<0.001, 0.001, ifelse(p3<0.01, 0.01, ifelse(p3<0.05,0.05,p3)))
+```
+
+There was no difference in looking times between the first Contact test event (Median =
+`r median(ContactTest1)`) and the first No Contact event (Median = 
+`r median(NoContactTest1)`),  (Wilcoxon *Z* = `r Z1`,  *p* = `r p1`)
+
+There was no difference in looking times between the second Contact test event (Median = `r median(ContactTest2)`) and the second No Contact event (Median = 
+`r median(NoContactTest2)`),  (Wilcoxon *Z* = `r Z2`,  *p* = `r p2`).
+
+There was a difference in looking times between the third Contact test event (Median =
+`r median(ContactTest3)`) and the third No Contact event (Median = 
+`r median(NoContactTest3)`),  (Wilcoxon *Z* = `r Z3`,  *p* = `r p3`).
+
+#Bar Graph Means
+```{r barplot_means_65, fig.path='Figures/', dev=c('png','postscript'), fig.width = 8, fig.height = 7}
+means <- matrix(c(mean(ContactTest1),mean(ContactTest2),mean(ContactTest3),mean(NoContactTest1),mean(NoContactTest2),mean(NoContactTest3)),ncol=3,byrow=TRUE)
+se <- matrix(c(s.error(ContactTest1),s.error(ContactTest2),s.error(ContactTest3),s.error(NoContactTest1),s.error(NoContactTest2),s.error(NoContactTest3)),ncol=3,byrow=TRUE)
+
+colnames(means) <- c("Test Trial 1","Test Trial 2","Test Trial 3")
+rownames(means) <- c("Contact","No Contact")
+means <- as.table(means)
+meansR <- round(means,2)
+g.range = range(0,ceiling(max(means))+10)
+
+plot.new()
+barCenters <- barplot(means, col=c("darkblue","red"), legend = rownames(means), ylab = "Mean Looking Time (sec)", beside = TRUE, ylim=g.range)
+arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
+text(barCenters,means+se+1.5,label=meansR)
+```
+
+```{r ttest_65}
+t1 = t.test(NoContactTest1,ContactTest1,paired=TRUE)
+
+t2 = t.test(NoContactTest2,ContactTest2,paired=TRUE)
+
+t3 = t.test(NoContactTest3,ContactTest3,paired=TRUE)
+```
+
+There was no difference in looking times between the first Possible test event (M =
+`r round(mean(ContactTest1), 2)`) and the first Impossible event (M = 
+`r round(mean(NoContactTest1),2)`),  (t(`r round(t1$parameter,2)`) = `r round(t1$statistic,2)`,  *p* = `r round(t1$p.value,2)`).
+
+There was no difference in looking times between the second Possible test event (M = 
+`r round(mean(ContactTest2),2)`) and the second Impossible event (M = 
+`r round(mean(NoContactTest2),2)`),  (t(`r round(t2$parameter,2)`) = `r round(t2$statistic,2)`,  *p* = `r round(t2$p.value,2)`).
+
+There was a difference in looking times between the third Possible test event (M =
+`r round(mean(ContactTest3),2)`) and the third Impossible event (M = 
+`r round(mean(NoContactTest3),2)`),  (t(`r round(t3$parameter,2)`) = `r round(t3$statistic,2)`,  *p* = `r round(t3$p.value,2)`).
+
