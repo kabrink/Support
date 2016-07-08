@@ -20,39 +20,37 @@ s.error <- function(x) sd(x)/sqrt(length(x))
 ```
 
 ```{r load_file}
-#detach(support)
-#filename="/Volumes/lsa-research01/ALL STUDIES/Current Studies/Support/Support 3.0/Support - Data v3.0.sav"
-#support <- spss.get(filename,datevars=c("DOB","DOT"))
-
-filename="/Volumes/lsa-research01/ALL STUDIES/Current Studies/Support/Support 3.0/Support - Data v3.0.sav"
+filename="/Volumes/lsa-research01/ALL STUDIES/Current Studies/Support/Support 3.0/Support - Data v3.2.sav"
 support <- spss.get(filename,datevars=c("DOB","DOT"))
-
-support = support[which(support$RightFam1!='NA'),]
-support = support[which(support$LeftFam1!='NA'),]
-support = support[which(support$RightFam2!='NA'),]
-support = support[which(support$LeftFam2!='NA'),]
-
 ```
 
-```{r calculate_variables}
-support$Age = (year(as.period(new_interval(support$DOB, support$DOT)))*12) + month(as.period(new_interval(support$DOB, support$DOT))) + (day(as.period(new_interval(support$DOB, support$DOT)))/30)
+```{r calculate_age}
+support$Age = (year(as.period(interval(support$DOB, support$DOT)))*12) + month(as.period(interval(support$DOB, support$DOT))) + (day(as.period(interval(support$DOB, support$DOT)))/30)
 support = support[which(support$DOT>='2016-01-13'),]
+```
 
+```{r calculate_crawl}
+#converts variable strings to values
 support$Crawl2 = ifelse(support$Crawl==levels(support$Crawl)[5], 3, ifelse(support$Crawl==levels(support$Crawl)[4], 2, ifelse(support$Crawl==levels(support$Crawl)[3], 1, ifelse(support$Crawl==levels(support$Crawl)[2], 0, NA))))
+```
 
+```{r calculate_dishab}
+#calculate dishabituation: change in looking time from last familiarization trial to first test trial
 support$dishab = ifelse(support$FirstTest == "No Contact",
                         support$NoContactTest1-support$LeftFam2,
                         support$ContactTest1-support$RightFam2)
-support$hab = ifelse(support$FirstTest == "No Contact",
-                       support$RightFam1-support$LeftFam2,
-                       support$LeftFam1-support$RightFam2)
 
-#support$hab = mean((support$RightFam1+support$LeftFam1)/2)-mean((support$LeftFam2+support$RightFam2)/2)
+#calculate how much infant habituation during familiarization: decrease in looking time for first familiarization trial to last familiarization trial
+#support$hab = ifelse(support$FirstTest == "No Contact",
+#                       support$RightFam1-support$LeftFam2,
+#                       support$LeftFam1-support$RightFam2)
 
+#calculate whether infants habituated (looking time on last trial decreased to less than half looking time of first trial)
 #support$habYN = ifelse(support$FirstTest == "No Contact",
 #                        ifelse(support$RightFam1>2*support$LeftFam2,1,0),
 #                        ifelse(support$LeftFam1>2*support$RightFam2,1,0))
 
+#calculate whether infants habituated (looking time on last two trials decreased to less than half looking time of first two trial)
 #support$habYN = ifelse(mean(support$RightFam1+support$LeftFam1)>mean(support$LeftFam2+support$RightFam2),1,0)
 ```
 
@@ -65,45 +63,20 @@ support$NoContactTest.Average = (support$NoContactTest1+support$NoContactTest2+s
 
 support = support[which(support$ContactTest.Average!='NA'),]
 support = support[which(support$NoContactTest.Average!='NA'),]
+
+support = support[which(support$Closed!="Closed"),]
 ```
 
-```{r computer_error2}
-#support = support[which((support$ContactTest1 >= 4)&(support$ContactTest2 >= 4)&(support$ContactTest3 >= 4)&(support$NoContactTest1 >= 4)&(support$NoContactTest2 >= 4)&(support$NoContactTest3 >= 4)),]
-
-#support = support[which((support$ContactTest1 >= 4)&(support$NoContactTest1 >= 4)),]
-#support = support[which((support$ContactTest2 >= 4)&(support$NoContactTest2 >= 4)),]
-#support = support[which((support$ContactTest3 >= 4)&(support$NoContactTest3 >= 4)),]
-```
-
-```{r outliers}
-#  averages = append(support$ContactTest.Average, support$NoContactTest.Average)
-#  support = support[which(support$ContactTest.Average <= (mean(averages)+(2*sd(averages)))),]
-#  support = support[which(support$NoContactTest.Average <= (mean(averages)+(2*sd(averages)))),]
-#  support = support[which(support$ContactTest.Average >= (mean(averages)-(2*sd(averages)))),]
-#  support = support[which(support$NoContactTest.Average >= (mean(averages)-(2*sd(averages)))),]
-
-#support = support[which(support$hab > 0),]
-#support = support[which(support$habYN == 1),]
-```
-
-Now there are `r length(support$SubID)` participants after removing for computer error and outliers. 
+Now there are `r length(support$SubID)` participants after removing for computer error. 
 
 ```{r crawling}
 #support = support[which(support$Crawl2>0),]
-#support = support[which(support$Age>7.3),]
-#support = support[which(support$Age<=7.3),] #10 participants
-#support = support[which(support$Age>7.3),] #13 participants
-
-#look at effect of age on response
-
 ```
 
 Now there are `r length(support$SubID)` participants after removing for crawling. 
 
 ```{r demographics}
 attach(support)
-
-isGirl <- support$Sex == "Female"
 conCol= rgb(red=87/255,green=144/255,blue=154/255) #"darkblue"
 nocCol= rgb(red=237/255,green=186/255,blue=20/255) #"red"
 ```
@@ -116,7 +89,7 @@ The minimum age of the sample is `r round(min(Age), digits = 2)` months.
 
 The maximum age of the sample is `r round(max(Age), digits = 2)` months.
 
-There are `r sum(isGirl)` females in the sample.
+There are `r sum(support$Sex == "Female")` females in the sample.
 
 The first date of test was `r min(DOT)`.
 
@@ -401,4 +374,7 @@ text(barCenters,means+se+1.5,label=meansR)
 
 pander(t.test(youngsupport$NoContactTest1,youngsupport$ContactTest1,paired=TRUE))
 pander(t.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE))
+
+pander(wilcox.test(youngsupport$NoContactTest1,youngsupport$ContactTest1,paired=TRUE))
+pander(wilcox.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE))
 ```
