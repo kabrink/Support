@@ -10,32 +10,38 @@ knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
 ```
 
 ```{r install_libraries}
-library(lubridate)
-library(Hmisc)
-library(pander)
+library(lubridate) #for calculating ages
+library(Hmisc) #for reading SPSS files
+library(pander) #for displaying tables
 ```
 
 ```{r standard_error}
+#calculates standard error
 s.error <- function(x) sd(x)/sqrt(length(x))
 ```
 
 ```{r load_file}
 filename="/Volumes/lsa-research01/ALL STUDIES/Current Studies/Support/Support 3.0/Support - Data v3.2.sav"
-support <- spss.get(filename,datevars=c("DOB","DOT"))
+support <- spss.get(filename,datevars=c("DOB","DOT")) #recognize DOB and DOT files as date variables
 ```
 
 ```{r calculate_age}
 support$Age = (year(as.period(interval(support$DOB, support$DOT)))*12) + month(as.period(interval(support$DOB, support$DOT))) + (day(as.period(interval(support$DOB, support$DOT)))/30)
+
+#select only infants taht participated after 2016-01-13, the start of the final design of the study
 support = support[which(support$DOT>='2016-01-13'),]
 ```
 
 ```{r calculate_crawl}
-#converts variable strings to values
-support$Crawl2 = ifelse(support$Crawl==levels(support$Crawl)[5], 3, ifelse(support$Crawl==levels(support$Crawl)[4], 2, ifelse(support$Crawl==levels(support$Crawl)[3], 1, ifelse(support$Crawl==levels(support$Crawl)[2], 0, NA))))
+#converts variable strings to values for the crawl variable 
+support$Crawl2 = ifelse(support$Crawl=="Very true", 3, ifelse(support$Crawl==levels(support$Crawl)[4], 2, ifelse(support$Crawl=="Rarely true", 1, ifelse(support$Crawl=="Not at all true", 0, NA))))
 ```
 
 ```{r calculate_dishab}
 #calculate dishabituation: change in looking time from last familiarization trial to first test trial
+#Positive values mean that the infant renewed interest and dishabituated
+#Negative values mean that the infant looked for less time during test and did not dishabituate
+
 support$dishab = ifelse(support$FirstTest == "No Contact",
                         support$NoContactTest1-support$LeftFam2,
                         support$ContactTest1-support$RightFam2)
@@ -110,7 +116,7 @@ hist(NoContactTest3, col = nocCol, breaks = 10)
 ```
 
 #Bar Graph: Median by Test Trial
-```{r barplot, fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
+```{r barplot_median_trial, fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
 medians <- matrix(c(median(ContactTest1),median(ContactTest2),median(ContactTest3),median(NoContactTest1),median(NoContactTest2),median(NoContactTest3)),ncol=3,byrow=TRUE)
 colnames(medians) <- c("Test Trial 1","Test Trial 2","Test Trial 3")
 rownames(medians) <- c("Contact","No Contact")
@@ -150,12 +156,12 @@ There was no difference in looking times between the first Contact test event (M
 There was no difference in looking times between the second Contact test event (Median = `r median(ContactTest2)`) and the second No Contact event (Median = 
 `r median(NoContactTest2)`),  (Wilcoxon *Z* = `r Z2`,  *p* = `r p2`).
 
-There was a difference in looking times between the third Contact test event (Median =
+There was no difference in looking times between the third Contact test event (Median =
 `r median(ContactTest3)`) and the third No Contact event (Median = 
 `r median(NoContactTest3)`),  (Wilcoxon *Z* = `r Z3`,  *p* = `r p3`).
 
 #Bar Graph: Means by Test Trial
-```{r barplot_means_65, fig.path='Figures/', dev=c('png','postscript'), fig.width = 8, fig.height = 7}
+```{r barplot_means_trial, fig.path='Figures/', dev=c('png','postscript'), fig.width = 8, fig.height = 7}
 means <- matrix(c(mean(ContactTest1),mean(ContactTest2),mean(ContactTest3),mean(NoContactTest1),mean(NoContactTest2),mean(NoContactTest3)),ncol=3,byrow=TRUE)
 se <- matrix(c(s.error(ContactTest1),s.error(ContactTest2),s.error(ContactTest3),s.error(NoContactTest1),s.error(NoContactTest2),s.error(NoContactTest3)),ncol=3,byrow=TRUE)
 
@@ -171,7 +177,7 @@ arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=9
 text(barCenters,means+se+1.5,label=meansR)
 ```
 
-```{r ttest_65}
+```{r ttest}
 t1 = t.test(NoContactTest1,ContactTest1,paired=TRUE)
 
 t2 = t.test(NoContactTest2,ContactTest2,paired=TRUE)
@@ -187,7 +193,7 @@ There was no difference in looking times between the second Possible test event 
 `r round(mean(ContactTest2),2)`) and the second Impossible event (M = 
 `r round(mean(NoContactTest2),2)`),  (t(`r round(t2$parameter,2)`) = `r round(t2$statistic,2)`,  *p* = `r round(t2$p.value,2)`).
 
-There was a difference in looking times between the third Possible test event (M =
+There was no difference in looking times between the third Possible test event (M =
 `r round(mean(ContactTest3),2)`) and the third Impossible event (M = 
 `r round(mean(NoContactTest3),2)`),  (t(`r round(t3$parameter,2)`) = `r round(t3$statistic,2)`,  *p* = `r round(t3$p.value,2)`).
 
@@ -210,12 +216,12 @@ text(barCenters,means+se+1.5,label=meansR)
 t.avg = t.test(NoContactTest.Average,ContactTest.Average,paired=TRUE)
 ```
 
-There was a difference in looking times between the average looking time of all three Possible test events (M =
+There was no difference in looking times between the average looking time of all three Possible test events (M =
 `r round(mean(ContactTest.Average),2)`) and the average looking time of all three Impossible events (M = 
 `r round(mean(NoContactTest.Average),2)`),  (t(`r round(t.avg$parameter,2)`) = `r round(t.avg$statistic,2)`,  *p* = `r round(t.avg$p.value,2)`).
 
-##First trial between subjects
-```{r between}
+##Mean of first trial between subjects
+```{r between_mean}
 imp.first <- support[which(support$FirstTest == "No Contact"),]
 poss.first <- support[which(support$FirstTest == "Contact"),]
 
@@ -236,7 +242,8 @@ arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=9
 text(barCenters,means+se+1.5,label=meansR)
 ```
 
-```{r between_plot}
+##Median of first trial between subjects
+```{r between_median}
 medians <- matrix(c(median(poss.first$ContactTest1), median(imp.first$NoContactTest1)),ncol=2,byrow=TRUE)
 se <- matrix(c(s.error(poss.first$ContactTest1),s.error(imp.first$NoContactTest1)),ncol=2,byrow=TRUE)
 
@@ -250,8 +257,11 @@ barCenters <- barplot(medians, col=c(conCol,nocCol), ylab = "Median Looking Time
 text(barCenters,medians+1.5,label=mediansR)
 ```
 
-##Dishabituation
-```{r dishab}
+##Dishabituation (Difference between last familiarization and first test)
+###Positive values indicate dishabituation (renewed interest), negative values indicate no dishabituation
+
+##Mean of dishabituation
+```{r dishab_mean}
 pander(t.test(imp.first$dishab,poss.first$dishab))
 pander(wilcox.test(imp.first$dishab,poss.first$dishab))
 
@@ -267,11 +277,10 @@ plot.new()
 barCenters <- barplot(means, col=c(conCol,nocCol), ylab = "Mean Looking Time (sec)", beside = TRUE, ylim=g.range)
 arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
 text(barCenters,means+se+1.5,label=meansR)
-
 ```
 
-```{r dishab_plot}
-
+##Median of Dishabituation
+```{r dishab_median}
 hist(poss.first$dishab, col = conCol, breaks = 10)
 hist(imp.first$dishab, col = nocCol, breaks = 10)
 
@@ -288,17 +297,16 @@ text(barCenters,medians+1.5,label=mediansR)
 ```
 
 
-
-###Young vs old average trial performance
+##Young (<=7.3 months) vs Old infants (>7.3) Average looking time across conditions
 ```{r young_vs_old_data}
 youngsupport = support[which(support$Age<=7.3),]
 oldsupport = support[which(support$Age>7.3),]
 ```
 
-##Young vs old
 There were `r length(youngsupport$ContactTest.Average)` less than or equal to 7.3 months old.
 There were `r length(oldsupport$ContactTest.Average)` greater than or equal to 7.3 months old.
 
+#Young vs Old Mean by Condition
 ```{r young_vs_old, fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6}
 means <- matrix(c(mean(youngsupport$ContactTest.Average), mean(youngsupport$NoContactTest.Average), mean(oldsupport$ContactTest.Average), mean(oldsupport$NoContactTest.Average)),ncol=2,byrow=F)
 se <- matrix(c(s.error(youngsupport$ContactTest.Average), s.error(youngsupport$NoContactTest.Average), s.error(oldsupport$ContactTest.Average), s.error(oldsupport$NoContactTest.Average)),ncol=2,byrow=F)
@@ -377,4 +385,28 @@ pander(t.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE))
 
 pander(wilcox.test(youngsupport$NoContactTest1,youngsupport$ContactTest1,paired=TRUE))
 pander(wilcox.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE))
+```
+
+##Young vs old third trial
+```{r young_vs_old_t3,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6}
+
+means <- matrix(c(mean(youngsupport$ContactTest3), mean(youngsupport$NoContactTest3), mean(oldsupport$ContactTest3), mean(oldsupport$NoContactTest3)),ncol=2,byrow=F)
+se <- matrix(c(s.error(youngsupport$ContactTest3), s.error(youngsupport$NoContactTest3), s.error(oldsupport$ContactTest3), s.error(oldsupport$NoContactTest3)),ncol=2,byrow=F)
+
+colnames(means) <- c("< 7.3 months","> 7.3 months")
+rownames(means) <- c("Contact","No Contact")
+means <- as.table(means)
+meansR <- round(means,2)
+g.range = range(0,ceiling(max(means))+20)
+
+plot.new()
+barCenters <- barplot(means, col=c(conCol,nocCol), ylab = "Mean Looking Time (sec)", legend = rownames(means), beside = TRUE, ylim=g.range)
+arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
+text(barCenters,means+se+1.5,label=meansR)
+
+pander(t.test(youngsupport$NoContactTest3,youngsupport$ContactTest3,paired=TRUE))
+pander(t.test(oldsupport$NoContactTest3,oldsupport$ContactTest3,paired=TRUE))
+
+pander(wilcox.test(youngsupport$NoContactTest3,youngsupport$ContactTest3,paired=TRUE))
+pander(wilcox.test(oldsupport$NoContactTest3,oldsupport$ContactTest3,paired=TRUE))
 ```
