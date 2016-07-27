@@ -301,6 +301,12 @@ text(barCenters,medians+1.5,label=mediansR)
 ```{r young_vs_old_data}
 youngsupport = support[which(support$Age<=7.3),]
 oldsupport = support[which(support$Age>7.3),]
+
+pander(table(support$Order,support$Age<=7.3))
+pander(table(support$Sex,support$Age<=7.3))
+
+pander(table(youngsupport$Sex,youngsupport$Order))
+pander(table(oldsupport$Sex,oldsupport$Order))
 ```
 
 There were `r length(youngsupport$ContactTest.Average)` less than or equal to 7.3 months old.
@@ -388,7 +394,7 @@ pander(wilcox.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE
 ```
 
 ##Young vs old third trial
-```{r young_vs_old_t3,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6}
+```{r young_vs_old_t3,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6, include=FALSE}
 
 means <- matrix(c(mean(youngsupport$ContactTest3), mean(youngsupport$NoContactTest3), mean(oldsupport$ContactTest3), mean(oldsupport$NoContactTest3)),ncol=2,byrow=F)
 se <- matrix(c(s.error(youngsupport$ContactTest3), s.error(youngsupport$NoContactTest3), s.error(oldsupport$ContactTest3), s.error(oldsupport$NoContactTest3)),ncol=2,byrow=F)
