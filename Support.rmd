@@ -82,6 +82,9 @@ Now there are `r length(support$SubID)` participants after removing for computer
 Now there are `r length(support$SubID)` participants after removing for crawling. 
 
 ```{r demographics}
+youngsupport = support[which(support$Age<=7.3),]
+oldsupport = support[which(support$Age>7.3),]
+
 attach(support)
 conCol= rgb(red=87/255,green=144/255,blue=154/255) #"darkblue"
 nocCol= rgb(red=237/255,green=186/255,blue=20/255) #"red"
@@ -115,7 +118,8 @@ hist(NoContactTest2, col = nocCol, breaks = 10)
 hist(NoContactTest3, col = nocCol, breaks = 10)
 ```
 
-#Bar Graph: Median by Test Trial
+#Non-Parametric Analyses
+##Bar Graph: Median by Test Trial
 ```{r barplot_median_trial, fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
 medians <- matrix(c(median(ContactTest1),median(ContactTest2),median(ContactTest3),median(NoContactTest1),median(NoContactTest2),median(NoContactTest3)),ncol=3,byrow=TRUE)
 colnames(medians) <- c("Test Trial 1","Test Trial 2","Test Trial 3")
@@ -129,8 +133,6 @@ barCenters <- barplot(medians, col=c(conCol,nocCol), legend = rownames(medians),
 text(barCenters,medians+1.5,label=medians)
 ```
 
-#Wilcox Test
-Because the distribution of the Test trial is not normal we will use the non-parametric within samples t-test.
 ```{r wilcox_test}
 
 t1 = wilcox.test(NoContactTest1,ContactTest1,paired=TRUE)
@@ -160,7 +162,93 @@ There was no difference in looking times between the third Contact test event (M
 `r median(ContactTest3)`) and the third No Contact event (Median = 
 `r median(NoContactTest3)`),  (Wilcoxon *Z* = `r Z3`,  *p* = `r p3`).
 
-#Bar Graph: Means by Test Trial
+##Bar Graph: Median by Test Trial (Younger infants)
+```{r barplot_median_young, fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
+medians <- matrix(c(median(youngsupport$ContactTest1),median(youngsupport$ContactTest2),median(youngsupport$ContactTest3),median(youngsupport$NoContactTest1),median(youngsupport$NoContactTest2),median(youngsupport$NoContactTest3)),ncol=3,byrow=TRUE)
+colnames(medians) <- c("Test Trial 1","Test Trial 2","Test Trial 3")
+rownames(medians) <- c("Contact","No Contact")
+medians <- as.table(medians)
+
+g.range = range(0,ceiling(max(medians))+5)
+
+plot.new()
+barCenters <- barplot(medians, col=c(conCol,nocCol), legend = rownames(medians), ylab = "Median Looking Time (sec)", beside = TRUE, ylim=g.range)
+text(barCenters,medians+1.5,label=medians)
+```
+
+```{r wilcox_test_young}
+t1 = wilcox.test(youngsupport$NoContactTest1,youngsupport$ContactTest1,paired=TRUE)
+Z1 = round(qnorm(t1$p.value/2),digits = 2)
+p1 = round(t1$p.value, digits = 2)
+p1 <- ifelse(p1<0.001, 0.001, ifelse(p1<0.01, 0.01, ifelse(p1<0.05,0.05,p1)))
+
+ t2 = wilcox.test(youngsupport$NoContactTest2,youngsupport$ContactTest2,paired=TRUE)
+ Z2 = round(qnorm(t2$p.value/2),digits = 2)
+ p2 = round(t2$p.value, digits = 2)
+ p2 <- ifelse(p2<0.001, 0.001, ifelse(p2<0.01, 0.01, ifelse(p2<0.05,0.05,p2)))
+
+ t3 = wilcox.test(youngsupport$NoContactTest3,youngsupport$ContactTest3,paired=TRUE)
+ Z3 = round(qnorm(t3$p.value/2),digits = 2)
+ p3 = round(t3$p.value, digits = 2)
+ p3 <- ifelse(p3<0.001, 0.001, ifelse(p3<0.01, 0.01, ifelse(p3<0.05,0.05,p3)))
+```
+
+For younger infants, there was no difference in looking times between the first Contact test event (Median =
+`r median(youngsupport$ContactTest1)`) and the first No Contact event (Median = 
+`r median(youngsupport$NoContactTest1)`),  (Wilcoxon *Z* = `r Z1`,  *p* = `r p1`)
+
+For younger infants, there was no difference in looking times between the second Contact test event (Median = `r median(youngsupport$ContactTest2)`) and the second No Contact event (Median = 
+`r median(youngsupport$NoContactTest2)`),  (Wilcoxon *Z* = `r Z2`,  *p* = `r p2`).
+
+For younger infants, there was no difference in looking times between the third Contact test event (Median =
+`r median(youngsupport$ContactTest3)`) and the third No Contact event (Median = 
+`r median(youngsupport$NoContactTest3)`),  (Wilcoxon *Z* = `r Z3`,  *p* = `r p3`).
+
+##Bar Graph: Median by Test Trial (Older infants)
+```{r barplot_median_old, fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
+medians <- matrix(c(median(oldsupport$ContactTest1),median(oldsupport$ContactTest2),median(oldsupport$ContactTest3),median(oldsupport$NoContactTest1),median(oldsupport$NoContactTest2),median(oldsupport$NoContactTest3)),ncol=3,byrow=TRUE)
+colnames(medians) <- c("Test Trial 1","Test Trial 2","Test Trial 3")
+rownames(medians) <- c("Contact","No Contact")
+medians <- as.table(medians)
+
+g.range = range(0,ceiling(max(medians))+5)
+
+plot.new()
+barCenters <- barplot(medians, col=c(conCol,nocCol), legend = rownames(medians), ylab = "Median Looking Time (sec)", beside = TRUE, ylim=g.range)
+text(barCenters,medians+1.5,label=medians)
+```
+
+```{r wilcox_test_old}
+
+t1 = wilcox.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE)
+Z1 = round(qnorm(t1$p.value/2),digits = 2)
+p1 = round(t1$p.value, digits = 2)
+p1 <- ifelse(p1<0.001, 0.001, ifelse(p1<0.01, 0.01, ifelse(p1<0.05,0.05,p1)))
+
+t2 = wilcox.test(oldsupport$NoContactTest2,oldsupport$ContactTest2,paired=TRUE)
+Z2 = round(qnorm(t2$p.value/2),digits = 2)
+p2 = round(t2$p.value, digits = 2)
+p2 <- ifelse(p2<0.001, 0.001, ifelse(p2<0.01, 0.01, ifelse(p2<0.05,0.05,p2)))
+
+t3 = wilcox.test(oldsupport$NoContactTest3,oldsupport$ContactTest3,paired=TRUE)
+Z3 = round(qnorm(t3$p.value/2),digits = 2)
+p3 = round(t3$p.value, digits = 2)
+p3 <- ifelse(p3<0.001, 0.001, ifelse(p3<0.01, 0.01, ifelse(p3<0.05,0.05,p3)))
+```
+
+There was no difference in looking times between the first Contact test event (Median =
+`r median(oldsupport$ContactTest1)`) and the first No Contact event (Median = 
+`r median(oldsupport$NoContactTest1)`),  (Wilcoxon *Z* = `r Z1`,  *p* = `r p1`)
+
+There was no difference in looking times between the second Contact test event (Median = `r median(oldsupport$ContactTest2)`) and the second No Contact event (Median = 
+`r median(oldsupport$NoContactTest2)`),  (Wilcoxon *Z* = `r Z2`,  *p* = `r p2`).
+
+There was no difference in looking times between the third Contact test event (Median =
+`r median(oldsupport$ContactTest3)`) and the third No Contact event (Median = 
+`r median(oldsupport$NoContactTest3)`),  (Wilcoxon *Z* = `r Z3`,  *p* = `r p3`).
+
+#Parametric Analyses
+##Bar Graph: Means by Test Trial (All infants)
 ```{r barplot_means_trial, fig.path='Figures/', dev=c('png','postscript'), fig.width = 8, fig.height = 7}
 means <- matrix(c(mean(ContactTest1),mean(ContactTest2),mean(ContactTest3),mean(NoContactTest1),mean(NoContactTest2),mean(NoContactTest3)),ncol=3,byrow=TRUE)
 se <- matrix(c(s.error(ContactTest1),s.error(ContactTest2),s.error(ContactTest3),s.error(NoContactTest1),s.error(NoContactTest2),s.error(NoContactTest3)),ncol=3,byrow=TRUE)
@@ -197,8 +285,82 @@ There was no difference in looking times between the third Possible test event (
 `r round(mean(ContactTest3),2)`) and the third Impossible event (M = 
 `r round(mean(NoContactTest3),2)`),  (t(`r round(t3$parameter,2)`) = `r round(t3$statistic,2)`,  *p* = `r round(t3$p.value,2)`).
 
-#Bar Graph: Average Looking Time Across Condition
+#Bar Graph: Means by Test Trial (Younger infants)
+```{r young_means,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
+means <- matrix(c(mean(youngsupport$ContactTest1),mean(youngsupport$ContactTest2),mean(youngsupport$ContactTest3),mean(youngsupport$NoContactTest1),mean(youngsupport$NoContactTest2),mean(youngsupport$NoContactTest3)),ncol=3,byrow=TRUE)
+se <- matrix(c(s.error(youngsupport$ContactTest1),s.error(youngsupport$ContactTest2),s.error(youngsupport$ContactTest3),s.error(youngsupport$NoContactTest1),s.error(youngsupport$NoContactTest2),s.error(youngsupport$NoContactTest3)),ncol=3,byrow=TRUE)
 
+colnames(means) <- c("Test Trial 1","Test Trial 2","Test Trial 3")
+rownames(means) <- c("Contact","No Contact")
+means <- as.table(means)
+meansR <- round(means,2)
+g.range = range(0,ceiling(max(means))+12)
+
+plot.new()
+barCenters <- barplot(means, col=c(conCol,nocCol), legend = rownames(means), ylab = "Mean Looking Time (sec)", beside = TRUE, ylim=g.range)
+arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
+text(barCenters,means+se+1.5,label=meansR)
+```
+
+```{r ttest_young}
+t1 = t.test(youngsupport$NoContactTest1,youngsupport$ContactTest1,paired=TRUE)
+
+t2 = t.test(youngsupport$NoContactTest2,youngsupport$ContactTest2,paired=TRUE)
+
+t3 = t.test(youngsupport$NoContactTest3,youngsupport$ContactTest3,paired=TRUE)
+```
+
+For infants younger than 7.3 months, there was no difference in looking times between the first Possible test event (M =
+`r round(mean(youngsupport$ContactTest1), 2)`) and the first Impossible event (M = 
+`r round(mean(youngsupport$NoContactTest1),2)`),  (t(`r round(t1$parameter,2)`) = `r round(t1$statistic,2)`,  *p* = `r round(t1$p.value,2)`).
+
+For infants younger than 7.3 months, there was no difference in looking times between the second Possible test event (M = 
+`r round(mean(youngsupport$ContactTest2),2)`) and the second Impossible event (M = 
+`r round(mean(youngsupport$NoContactTest2),2)`),  (t(`r round(t2$parameter,2)`) = `r round(t2$statistic,2)`,  *p* = `r round(t2$p.value,2)`).
+
+For infants younger than 7.3 months, there was no difference in looking times between the third Possible test event (M =
+`r round(mean(youngsupport$ContactTest3),2)`) and the third Impossible event (M = 
+`r round(mean(youngsupport$NoContactTest3),2)`),  (t(`r round(t3$parameter,2)`) = `r round(t3$statistic,2)`,  *p* = `r round(t3$p.value,2)`).
+
+#Bar Graph: Means by Test Trial (Older infants)
+```{r old_means,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
+means <- matrix(c(mean(oldsupport$ContactTest1),mean(oldsupport$ContactTest2),mean(oldsupport$ContactTest3),mean(oldsupport$NoContactTest1),mean(oldsupport$NoContactTest2),mean(oldsupport$NoContactTest3)),ncol=3,byrow=TRUE)
+se <- matrix(c(s.error(oldsupport$ContactTest1),s.error(oldsupport$ContactTest2),s.error(oldsupport$ContactTest3),s.error(oldsupport$NoContactTest1),s.error(oldsupport$NoContactTest2),s.error(oldsupport$NoContactTest3)),ncol=3,byrow=TRUE)
+
+colnames(means) <- c("Test Trial 1","Test Trial 2","Test Trial 3")
+rownames(means) <- c("Contact","No Contact")
+means <- as.table(means)
+meansR <- round(means,2)
+g.range = range(0,ceiling(max(means))+12)
+
+plot.new()
+barCenters <- barplot(means, col=c(conCol,nocCol), legend = rownames(means), ylab = "Mean Looking Time (sec)", beside = TRUE, ylim=g.range)
+arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
+text(barCenters,means+se+1.5,label=meansR)
+```
+
+```{r ttest_old}
+t1 = t.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE)
+
+t2 = t.test(oldsupport$NoContactTest2,oldsupport$ContactTest2,paired=TRUE)
+
+t3 = t.test(oldsupport$NoContactTest3,oldsupport$ContactTest3,paired=TRUE)
+```
+
+For infants older than 7.3 months, there was no difference in looking times between the first Possible test event (M =
+`r round(mean(oldsupport$ContactTest1), 2)`) and the first Impossible event (M = 
+`r round(mean(oldsupport$NoContactTest1),2)`),  (t(`r round(t1$parameter,2)`) = `r round(t1$statistic,2)`,  *p* = `r round(t1$p.value,2)`).
+
+For infants older than 7.3 months, there was no difference in looking times between the second Possible test event (M = 
+`r round(mean(oldsupport$ContactTest2),2)`) and the second Impossible event (M = 
+`r round(mean(oldsupport$NoContactTest2),2)`),  (t(`r round(t2$parameter,2)`) = `r round(t2$statistic,2)`,  *p* = `r round(t2$p.value,2)`).
+
+For infants older than 7.3 months, there was no difference in looking times between the third Possible test event (M =
+`r round(mean(oldsupport$ContactTest3),2)`) and the third Impossible event (M = 
+`r round(mean(oldsupport$NoContactTest3),2)`),  (t(`r round(t3$parameter,2)`) = `r round(t3$statistic,2)`,  *p* = `r round(t3$p.value,2)`).
+
+
+##Bar Graph: Average Looking Time Across Condition
 ```{r barplot_means, fig.path='Figures/', dev=c('png','postscript'), fig.width = 4, fig.height = 7, include=TRUE}
 means <- matrix(c(mean(ContactTest.Average), mean(NoContactTest.Average)),ncol=2,byrow=TRUE)
 se <- matrix(c(s.error(ContactTest.Average),s.error(NoContactTest.Average)),ncol=2,byrow=TRUE)
@@ -220,14 +382,36 @@ There was no difference in looking times between the average looking time of all
 `r round(mean(ContactTest.Average),2)`) and the average looking time of all three Impossible events (M = 
 `r round(mean(NoContactTest.Average),2)`),  (t(`r round(t.avg$parameter,2)`) = `r round(t.avg$statistic,2)`,  *p* = `r round(t.avg$p.value,2)`).
 
-##Mean of first trial between subjects
-```{r between_mean}
+#Between-Subject Analyses
+##Bar Graph: Medians of first trial (Between-Subject)
+```{r between_median}
 imp.first <- support[which(support$FirstTest == "No Contact"),]
 poss.first <- support[which(support$FirstTest == "Contact"),]
 
-pander(t.test(imp.first$NoContactTest1,poss.first$ContactTest1))
-pander(wilcox.test(imp.first$NoContactTest1,poss.first$ContactTest1))
+medians <- matrix(c(median(poss.first$ContactTest1), median(imp.first$NoContactTest1)),ncol=2,byrow=TRUE)
+se <- matrix(c(s.error(poss.first$ContactTest1),s.error(imp.first$NoContactTest1)),ncol=2,byrow=TRUE)
 
+colnames(medians) <- c("Contact","No Contact")
+medians <- as.table(medians)
+mediansR <- round(medians,2)
+g.range = range(0,ceiling(max(medians))+10)
+
+plot.new()
+barCenters <- barplot(medians, col=c(conCol,nocCol), ylab = "Median Looking Time (sec)", beside = TRUE, ylim=g.range)
+text(barCenters,medians+1.5,label=mediansR)
+
+t1 = wilcox.test(imp.first$NoContactTest1,poss.first$ContactTest1,paired=FALSE)
+Z1 = round(qnorm(t1$p.value/2),digits = 2)
+p1 = round(t1$p.value, digits = 2)
+p1 <- ifelse(p1<0.001, 0.001, ifelse(p1<0.01, 0.01, ifelse(p1<0.05,0.05,p1)))
+```
+
+There was no difference in looking times between the first Contact test event (Median =
+`r median(poss.first$ContactTest1)`) and the first No Contact event (Median = 
+`r median(imp.first$NoContactTest1)`) between subjects,  (Wilcoxon *Z* = `r Z1`,  *p* = `r p1`)
+
+##Bar Graph: Means of first trial (Between-Subject)
+```{r between_mean}
 means <- matrix(c(mean(poss.first$ContactTest1), mean(imp.first$NoContactTest1)),ncol=2,byrow=TRUE)
 se <- matrix(c(s.error(poss.first$ContactTest1),s.error(imp.first$NoContactTest1)),ncol=2,byrow=TRUE)
 
@@ -240,12 +424,26 @@ plot.new()
 barCenters <- barplot(means, col=c(conCol,nocCol), ylab = "Mean Looking Time (sec)", beside = TRUE, ylim=g.range)
 arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
 text(barCenters,means+se+1.5,label=meansR)
+
+t1 = t.test(imp.first$NoContactTest1,poss.first$ContactTest1,paired=FALSE)
 ```
 
-##Median of first trial between subjects
-```{r between_median}
-medians <- matrix(c(median(poss.first$ContactTest1), median(imp.first$NoContactTest1)),ncol=2,byrow=TRUE)
-se <- matrix(c(s.error(poss.first$ContactTest1),s.error(imp.first$NoContactTest1)),ncol=2,byrow=TRUE)
+There was no difference in looking times between the first Possible test event (M =
+`r round(mean(poss.first$ContactTest1), 2)`) and the first Impossible event (M = 
+`r round(mean(imp.first$NoContactTest1),2)`) between subjects,  (t(`r round(t1$parameter,2)`) = `r round(t1$statistic,2)`,  *p* = `r round(t1$p.value,2)`).
+
+#Dishabituation Analyses
+###(Difference between last familiarization and first test)
+Positive values indicate dishabituation (renewed interest), negative values indicate no dishabituation
+
+```{r}
+hist(poss.first$dishab, col = conCol, breaks = 10, main = "Dishabituation to first Possible Test Trial")
+hist(imp.first$dishab, col = nocCol, breaks = 10, main = "Dishabituation to first Impossible Test Trial")
+```
+
+##Bar Graph: Median of Dishabituation
+```{r dishab_median}
+medians <- matrix(c(median(poss.first$dishab), median(imp.first$dishab)),ncol=2,byrow=TRUE)
 
 colnames(medians) <- c("Contact","No Contact")
 medians <- as.table(medians)
@@ -255,16 +453,19 @@ g.range = range(floor(min(medians))-10,ceiling(max(medians))+10)
 plot.new()
 barCenters <- barplot(medians, col=c(conCol,nocCol), ylab = "Median Looking Time (sec)", beside = TRUE, ylim=g.range)
 text(barCenters,medians+1.5,label=mediansR)
+
+t1 = wilcox.test(imp.first$dishab,poss.first$dishab)
+Z1 = round(qnorm(t1$p.value/2),digits = 2)
+p1 = round(t1$p.value, digits = 2)
+p1 <- ifelse(p1<0.001, 0.001, ifelse(p1<0.01, 0.01, ifelse(p1<0.05,0.05,p1)))
 ```
 
-##Dishabituation (Difference between last familiarization and first test)
-###Positive values indicate dishabituation (renewed interest), negative values indicate no dishabituation
+There was no difference in dishabituation to the first Contact test event (Median =
+`r median(poss.first$dishab)`) and dishabituation to the first No Contact event (Median = 
+`r median(imp.first$dishab)`),  (Wilcoxon *Z* = `r Z1`,  *p* = `r p1`)
 
-##Mean of dishabituation
+##Bar Graph: Mean of dishabituation
 ```{r dishab_mean}
-pander(t.test(imp.first$dishab,poss.first$dishab))
-pander(wilcox.test(imp.first$dishab,poss.first$dishab))
-
 means <- matrix(c(mean(poss.first$dishab), mean(imp.first$dishab)),ncol=2,byrow=TRUE)
 se <- matrix(c(s.error(poss.first$dishab),s.error(imp.first$dishab)),ncol=2,byrow=TRUE)
 
@@ -277,42 +478,30 @@ plot.new()
 barCenters <- barplot(means, col=c(conCol,nocCol), ylab = "Mean Looking Time (sec)", beside = TRUE, ylim=g.range)
 arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
 text(barCenters,means+se+1.5,label=meansR)
+
+t1 = t.test(imp.first$dishab,poss.first$dishab)
 ```
 
-##Median of Dishabituation
-```{r dishab_median}
-hist(poss.first$dishab, col = conCol, breaks = 10)
-hist(imp.first$dishab, col = nocCol, breaks = 10)
+There was no difference in dishabituation to the first Possible test event (M =
+`r round(mean(poss.first$dishab), 2)`) and dishabituation to the first Impossible event (M = 
+`r round(mean(imp.first$dishab),2)`),  (t(`r round(t1$parameter,2)`) = `r round(t1$statistic,2)`,  *p* = `r round(t1$p.value,2)`).
 
-medians <- matrix(c(median(poss.first$dishab), median(imp.first$dishab)),ncol=2,byrow=TRUE)
-
-colnames(medians) <- c("Contact","No Contact")
-medians <- as.table(medians)
-mediansR <- round(medians,2)
-g.range = range(floor(min(medians))-10,ceiling(max(medians))+10)
-
-plot.new()
-barCenters <- barplot(medians, col=c(conCol,nocCol), ylab = "Median Looking Time (sec)", beside = TRUE, ylim=g.range)
-text(barCenters,medians+1.5,label=mediansR)
-```
-
-
-##Young (<=7.3 months) vs Old infants (>7.3) Average looking time across conditions
+##Breakdown of young (<=7.3 months) vs old infants (>7.3)
 ```{r young_vs_old_data}
 youngsupport = support[which(support$Age<=7.3),]
 oldsupport = support[which(support$Age>7.3),]
+              
+pander(table(support$Age<=7.3, support$Order))
+pander(table(support$Age<=7.3, support$Sex))
 
-pander(table(support$Order,support$Age<=7.3))
-pander(table(support$Sex,support$Age<=7.3))
-
-pander(table(youngsupport$Sex,youngsupport$Order))
-pander(table(oldsupport$Sex,oldsupport$Order))
+pander(table(youngsupport$Sex,youngsupport$Order), caption="Infants younger than 7.3 months")
+pander(table(oldsupport$Sex,oldsupport$Order), caption="Infants older than 7.3 months")
 ```
 
 There were `r length(youngsupport$ContactTest.Average)` less than or equal to 7.3 months old.
 There were `r length(oldsupport$ContactTest.Average)` greater than or equal to 7.3 months old.
 
-#Young vs Old Mean by Condition
+#Bar Graph: Mean Looking Time across Trials (Young vs Old)
 ```{r young_vs_old, fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6}
 means <- matrix(c(mean(youngsupport$ContactTest.Average), mean(youngsupport$NoContactTest.Average), mean(oldsupport$ContactTest.Average), mean(oldsupport$NoContactTest.Average)),ncol=2,byrow=F)
 se <- matrix(c(s.error(youngsupport$ContactTest.Average), s.error(youngsupport$NoContactTest.Average), s.error(oldsupport$ContactTest.Average), s.error(oldsupport$NoContactTest.Average)),ncol=2,byrow=F)
@@ -331,47 +520,8 @@ text(barCenters,means+se+1.5,label=meansR)
 pander(t.test(oldsupport$NoContactTest.Average,oldsupport$ContactTest.Average,paired=TRUE))
 ```
 
-###Young by trial
-```{r young_means,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
-means <- matrix(c(mean(youngsupport$ContactTest1),mean(youngsupport$ContactTest2),mean(youngsupport$ContactTest3),mean(youngsupport$NoContactTest1),mean(youngsupport$NoContactTest2),mean(youngsupport$NoContactTest3)),ncol=3,byrow=TRUE)
-se <- matrix(c(s.error(youngsupport$ContactTest1),s.error(youngsupport$ContactTest2),s.error(youngsupport$ContactTest3),s.error(youngsupport$NoContactTest1),s.error(youngsupport$NoContactTest2),s.error(youngsupport$NoContactTest3)),ncol=3,byrow=TRUE)
-
-colnames(means) <- c("Test Trial 1","Test Trial 2","Test Trial 3")
-rownames(means) <- c("Contact","No Contact")
-means <- as.table(means)
-meansR <- round(means,2)
-g.range = range(0,ceiling(max(means))+12)
-
-plot.new()
-barCenters <- barplot(means, col=c(conCol,nocCol), legend = rownames(means), ylab = "Mean Looking Time (sec)", beside = TRUE, ylim=g.range)
-arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
-text(barCenters,means+se+1.5,label=meansR)
-
-pander(t.test(youngsupport$NoContactTest1,youngsupport$ContactTest1,paired=TRUE))
-```
-
-##Old by trial
-```{r old_means,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
-means <- matrix(c(mean(oldsupport$ContactTest1),mean(oldsupport$ContactTest2),mean(oldsupport$ContactTest3),mean(oldsupport$NoContactTest1),mean(oldsupport$NoContactTest2),mean(oldsupport$NoContactTest3)),ncol=3,byrow=TRUE)
-se <- matrix(c(s.error(oldsupport$ContactTest1),s.error(oldsupport$ContactTest2),s.error(oldsupport$ContactTest3),s.error(oldsupport$NoContactTest1),s.error(oldsupport$NoContactTest2),s.error(oldsupport$NoContactTest3)),ncol=3,byrow=TRUE)
-
-colnames(means) <- c("Test Trial 1","Test Trial 2","Test Trial 3")
-rownames(means) <- c("Contact","No Contact")
-means <- as.table(means)
-meansR <- round(means,2)
-g.range = range(0,ceiling(max(means))+12)
-
-plot.new()
-barCenters <- barplot(means, col=c(conCol,nocCol), legend = rownames(means), ylab = "Mean Looking Time (sec)", beside = TRUE, ylim=g.range)
-arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
-text(barCenters,means+se+1.5,label=meansR)
-```
-
-##Young vs old first trial
+#Bar Graph: Mean Looking Time on First Trial (Young vs Old)
 ```{r young_vs_old_t1,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6}
-youngsupport = support[which(support$Age<=7.3),]
-oldsupport = support[which(support$Age>7.3),]
-
 means <- matrix(c(mean(youngsupport$ContactTest1), mean(youngsupport$NoContactTest1), mean(oldsupport$ContactTest1), mean(oldsupport$NoContactTest1)),ncol=2,byrow=F)
 se <- matrix(c(s.error(youngsupport$ContactTest1), s.error(youngsupport$NoContactTest1), s.error(oldsupport$ContactTest1), s.error(oldsupport$NoContactTest1)),ncol=2,byrow=F)
 
@@ -385,17 +535,10 @@ plot.new()
 barCenters <- barplot(means, col=c(conCol,nocCol), ylab = "Mean Looking Time (sec)", legend = rownames(means), beside = TRUE, ylim=g.range)
 arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
 text(barCenters,means+se+1.5,label=meansR)
-
-pander(t.test(youngsupport$NoContactTest1,youngsupport$ContactTest1,paired=TRUE))
-pander(t.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE))
-
-pander(wilcox.test(youngsupport$NoContactTest1,youngsupport$ContactTest1,paired=TRUE))
-pander(wilcox.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE))
 ```
 
-##Young vs old third trial
+#Bar Graph: Mean Looking Time on Third Trial (Young vs Old)
 ```{r young_vs_old_t3,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6, include=FALSE}
-
 means <- matrix(c(mean(youngsupport$ContactTest3), mean(youngsupport$NoContactTest3), mean(oldsupport$ContactTest3), mean(oldsupport$NoContactTest3)),ncol=2,byrow=F)
 se <- matrix(c(s.error(youngsupport$ContactTest3), s.error(youngsupport$NoContactTest3), s.error(oldsupport$ContactTest3), s.error(oldsupport$NoContactTest3)),ncol=2,byrow=F)
 
@@ -409,10 +552,4 @@ plot.new()
 barCenters <- barplot(means, col=c(conCol,nocCol), ylab = "Mean Looking Time (sec)", legend = rownames(means), beside = TRUE, ylim=g.range)
 arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
 text(barCenters,means+se+1.5,label=meansR)
-
-pander(t.test(youngsupport$NoContactTest3,youngsupport$ContactTest3,paired=TRUE))
-pander(t.test(oldsupport$NoContactTest3,oldsupport$ContactTest3,paired=TRUE))
-
-pander(wilcox.test(youngsupport$NoContactTest3,youngsupport$ContactTest3,paired=TRUE))
-pander(wilcox.test(oldsupport$NoContactTest3,oldsupport$ContactTest3,paired=TRUE))
 ```
