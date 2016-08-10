@@ -20,8 +20,9 @@ library(pander) #for displaying tables
 s.error <- function(x) sd(x)/sqrt(length(x))
 ```
 
-```{r barplot_medians}
-#function that takes in a vector of median values, and num of clusters, a vector of names for those clusters, a vector of names for groups, and a vector of colors for each group and formats them into a clustered bar graph
+```{r barplot_medians_func}
+#function that takes in a vector of median values, num of clusters, a vector of names for those clusters, a vector of names for groups, and a vector of colors for each group and formats them into a clustered bar graph
+#if you do not have different groups, just set groupnames to NA
 barplot_medians <- function(vals,nclusters,clusternames,groupnames,groupcolors){
   #formats medians for all test trials across all participants into a matrix
   medians <- matrix(vals,ncol=nclusters,byrow=TRUE)
@@ -34,7 +35,7 @@ barplot_medians <- function(vals,nclusters,clusternames,groupnames,groupcolors){
   medians <- as.table(medians)
   
   #calculate maximum value for y-axis with added padding so that we can include value labels above the bars
-  g.range = range(0,ceiling(max(medians))+5)
+  g.range = range(ifelse(min(medians)>0,0,floor(min(medians))-10),ceiling(max(medians))+10)
   
   #plot medians
   plot.new()
@@ -50,8 +51,9 @@ barplot_medians <- function(vals,nclusters,clusternames,groupnames,groupcolors){
 }
 ```
 
-```{r barplot_means}
+```{r barplot_means_func}
 #function that takes in a vector of mean values, s.error values, num of clusters, a vector of names for those clusters, a vector of names for groups, and a vector of colors for each group and formats them into a clustered bar graph with standard error bars
+#if you do not have different groups, just set groupnames to NA
 barplot_means <- function(meanvals,se.vals,nclusters,clusternames,groupnames,groupcolors){
   #formats means for all test trials across all participants into a matrix
   means <- matrix(meanvals,ncol=nclusters,byrow=TRUE)
@@ -84,7 +86,7 @@ barplot_means <- function(meanvals,se.vals,nclusters,clusternames,groupnames,gro
   #plot +/- 1 standard error bars
   arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
   
-  #print median values above bars
+  #print mean values above bars
   text(barCenters,means+se+1.5,label=meansR)
 }
 ```
@@ -161,15 +163,16 @@ Now there are `r length(support$SubID)` participants after removing for crawling
 
 ```{r demographics}
 #divide participants into two data sets based on whether they were above or below the mean age
-youngsupport = support[which(support$Age<=mean(support$Age)),]
-oldsupport = support[which(support$Age>mean(support$Age)),]
+ageSplit = median(support$Age)
+youngsupport = support[which(support$Age<=ageSplit),]
+oldsupport = support[which(support$Age>ageSplit),]
 
 #assign colors for plots for the two conditions (Contact and No Contact)
 conCol= rgb(red=87/255,green=144/255,blue=154/255) #color for Contact condition
 nocCol= rgb(red=237/255,green=186/255,blue=20/255) #color for No Contact condition
 
 #print a table that summarizes age data
-pander(summary(support$Age))
+pander(summary(support$Age), caption="Age in months")
 ```
 
 There are `r sum(support$Sex == "Female")` females in the sample.
@@ -215,20 +218,24 @@ barplot_medians(vals=c(median(support$ContactTest1),
 ```
 
 ```{r wilcox_test}
+#perform nonparametric t-tests for each test trial and store values for printing in markdown
 t1 = wilcox.test(support$NoContactTest1,support$ContactTest1,paired=TRUE)
+#find z value
 Z1 = round(qnorm(t1$p.value/2),digits = 2)
+#find p-value
 p1 = round(t1$p.value, digits = 2)
+#convert p-value to APA style
 p1 <- ifelse(p1<0.001, 0.001, ifelse(p1<0.01, 0.01, ifelse(p1<0.05,0.05,p1)))
 
- t2 = wilcox.test(support$NoContactTest2,support$ContactTest2,paired=TRUE)
- Z2 = round(qnorm(t2$p.value/2),digits = 2)
- p2 = round(t2$p.value, digits = 2)
- p2 <- ifelse(p2<0.001, 0.001, ifelse(p2<0.01, 0.01, ifelse(p2<0.05,0.05,p2)))
+t2 = wilcox.test(support$NoContactTest2,support$ContactTest2,paired=TRUE)
+Z2 = round(qnorm(t2$p.value/2),digits = 2)
+p2 = round(t2$p.value, digits = 2)
+p2 <- ifelse(p2<0.001, 0.001, ifelse(p2<0.01, 0.01, ifelse(p2<0.05,0.05,p2)))
 
- t3 = wilcox.test(support$NoContactTest3,support$ContactTest3,paired=TRUE)
- Z3 = round(qnorm(t3$p.value/2),digits = 2)
- p3 = round(t3$p.value, digits = 2)
- p3 <- ifelse(p3<0.001, 0.001, ifelse(p3<0.01, 0.01, ifelse(p3<0.05,0.05,p3)))
+t3 = wilcox.test(support$NoContactTest3,support$ContactTest3,paired=TRUE)
+Z3 = round(qnorm(t3$p.value/2),digits = 2)
+p3 = round(t3$p.value, digits = 2)
+p3 <- ifelse(p3<0.001, 0.001, ifelse(p3<0.01, 0.01, ifelse(p3<0.05,0.05,p3)))
 ```
 
 There was no difference in looking times between the first Contact test event (Median =
@@ -257,20 +264,22 @@ barplot_medians(vals=c(median(youngsupport$ContactTest1),
 ```
 
 ```{r wilcox_test_young}
+#perform nonparametric t-tests for each test trial and store values for printing in markdown
+
 t1 = wilcox.test(youngsupport$NoContactTest1,youngsupport$ContactTest1,paired=TRUE)
 Z1 = round(qnorm(t1$p.value/2),digits = 2)
 p1 = round(t1$p.value, digits = 2)
 p1 <- ifelse(p1<0.001, 0.001, ifelse(p1<0.01, 0.01, ifelse(p1<0.05,0.05,p1)))
 
- t2 = wilcox.test(youngsupport$NoContactTest2,youngsupport$ContactTest2,paired=TRUE)
- Z2 = round(qnorm(t2$p.value/2),digits = 2)
- p2 = round(t2$p.value, digits = 2)
- p2 <- ifelse(p2<0.001, 0.001, ifelse(p2<0.01, 0.01, ifelse(p2<0.05,0.05,p2)))
+t2 = wilcox.test(youngsupport$NoContactTest2,youngsupport$ContactTest2,paired=TRUE)
+Z2 = round(qnorm(t2$p.value/2),digits = 2)
+p2 = round(t2$p.value, digits = 2)
+p2 <- ifelse(p2<0.001, 0.001, ifelse(p2<0.01, 0.01, ifelse(p2<0.05,0.05,p2)))
 
- t3 = wilcox.test(youngsupport$NoContactTest3,youngsupport$ContactTest3,paired=TRUE)
- Z3 = round(qnorm(t3$p.value/2),digits = 2)
- p3 = round(t3$p.value, digits = 2)
- p3 <- ifelse(p3<0.001, 0.001, ifelse(p3<0.01, 0.01, ifelse(p3<0.05,0.05,p3)))
+t3 = wilcox.test(youngsupport$NoContactTest3,youngsupport$ContactTest3,paired=TRUE)
+Z3 = round(qnorm(t3$p.value/2),digits = 2)
+p3 = round(t3$p.value, digits = 2)
+p3 <- ifelse(p3<0.001, 0.001, ifelse(p3<0.01, 0.01, ifelse(p3<0.05,0.05,p3)))
 ```
 
 For younger infants, there was no difference in looking times between the first Contact test event (Median =
@@ -299,6 +308,8 @@ barplot_medians(vals=c(median(oldsupport$ContactTest1),
 ```
 
 ```{r wilcox_test_old}
+#perform nonparametric t-tests for each test trial and store values for printing in markdown
+
 t1 = wilcox.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE)
 Z1 = round(qnorm(t1$p.value/2),digits = 2)
 p1 = round(t1$p.value, digits = 2)
@@ -395,15 +406,15 @@ t2 = t.test(youngsupport$NoContactTest2,youngsupport$ContactTest2,paired=TRUE)
 t3 = t.test(youngsupport$NoContactTest3,youngsupport$ContactTest3,paired=TRUE)
 ```
 
-For infants younger than mean(support$Age) months, there was no difference in looking times between the first Possible test event (M =
+For infants younger than `r round(ageSplit,2)` months, there was no difference in looking times between the first Possible test event (M =
 `r round(mean(youngsupport$ContactTest1), 2)`) and the first Impossible event (M = 
 `r round(mean(youngsupport$NoContactTest1),2)`),  (t(`r round(t1$parameter,2)`) = `r round(t1$statistic,2)`,  *p* = `r round(t1$p.value,2)`).
 
-For infants younger than mean(support$Age) months, there was no difference in looking times between the second Possible test event (M = 
+For infants younger than `r round(ageSplit,2)` months, there was no difference in looking times between the second Possible test event (M = 
 `r round(mean(youngsupport$ContactTest2),2)`) and the second Impossible event (M = 
 `r round(mean(youngsupport$NoContactTest2),2)`),  (t(`r round(t2$parameter,2)`) = `r round(t2$statistic,2)`,  *p* = `r round(t2$p.value,2)`).
 
-For infants younger than mean(support$Age) months, there was no difference in looking times between the third Possible test event (M =
+For infants younger than `r round(ageSplit,2)` months, there was no difference in looking times between the third Possible test event (M =
 `r round(mean(youngsupport$ContactTest3),2)`) and the third Impossible event (M = 
 `r round(mean(youngsupport$NoContactTest3),2)`),  (t(`r round(t3$parameter,2)`) = `r round(t3$statistic,2)`,  *p* = `r round(t3$p.value,2)`).
 
@@ -435,15 +446,15 @@ t2 = t.test(oldsupport$NoContactTest2,oldsupport$ContactTest2,paired=TRUE)
 t3 = t.test(oldsupport$NoContactTest3,oldsupport$ContactTest3,paired=TRUE)
 ```
 
-For infants older than mean(support$Age) months, there was no difference in looking times between the first Possible test event (M =
+For infants older than `r round(ageSplit,2)` months, there was no difference in looking times between the first Possible test event (M =
 `r round(mean(oldsupport$ContactTest1), 2)`) and the first Impossible event (M = 
 `r round(mean(oldsupport$NoContactTest1),2)`),  (t(`r round(t1$parameter,2)`) = `r round(t1$statistic,2)`,  *p* = `r round(t1$p.value,2)`).
 
-For infants older than mean(support$Age) months, there was no difference in looking times between the second Possible test event (M = 
+For infants older than `r round(ageSplit,2)` months, there was no difference in looking times between the second Possible test event (M = 
 `r round(mean(oldsupport$ContactTest2),2)`) and the second Impossible event (M = 
 `r round(mean(oldsupport$NoContactTest2),2)`),  (t(`r round(t2$parameter,2)`) = `r round(t2$statistic,2)`,  *p* = `r round(t2$p.value,2)`).
 
-For infants older than mean(support$Age) months, there was no difference in looking times between the third Possible test event (M =
+For infants older than `r round(ageSplit,2)` months, there was no difference in looking times between the third Possible test event (M =
 `r round(mean(oldsupport$ContactTest3),2)`) and the third Impossible event (M = 
 `r round(mean(oldsupport$NoContactTest3),2)`),  (t(`r round(t3$parameter,2)`) = `r round(t3$statistic,2)`,  *p* = `r round(t3$p.value,2)`).
 
@@ -458,11 +469,13 @@ barplot_means(meanvals = c(mean(support$ContactTest.Average),
               clusternames = c("Contact","No Contact"),
               groupnames = NA,
               groupcolors = c(conCol,nocCol))
+
+t.avg = t.test(support$ContactTest.Average,support$NoContactTest.Average,paired=T)
 ```
 
 There was no difference in looking times between the average looking time of all three Possible test events (M =
-`r round(mean(ContactTest.Average),2)`) and the average looking time of all three Impossible events (M = 
-`r round(mean(NoContactTest.Average),2)`),  (t(`r round(t.avg$parameter,2)`) = `r round(t.avg$statistic,2)`,  *p* = `r round(t.avg$p.value,2)`).
+`r round(mean(support$ContactTest.Average),2)`) and the average looking time of all three Impossible events (M = 
+`r round(mean(support$NoContactTest.Average),2)`),  (t(`r round(t.avg$parameter,2)`) = `r round(t.avg$statistic,2)`,  *p* = `r round(t.avg$p.value,2)`).
 
 #Between-Subject Analyses
 ##Bar Graph: Medians of first trial (Between-Subject)
@@ -551,70 +564,65 @@ There was no difference in dishabituation to the first Possible test event (M =
 `r round(mean(poss.first$dishab), 2)`) and dishabituation to the first Impossible event (M = 
 `r round(mean(imp.first$dishab),2)`),  (t(`r round(t1$parameter,2)`) = `r round(t1$statistic,2)`,  *p* = `r round(t1$p.value,2)`).
 
-##Breakdown of young (<=mean(support$Age) months) vs old infants (>mean(support$Age))
+##Breakdown of young (<=`r round(ageSplit,2)` months) vs old infants (> `r round(ageSplit,2)`)
 ```{r young_vs_old_data}
-youngsupport = support[which(support$Age<=mean(support$Age)),]
-oldsupport = support[which(support$Age>mean(support$Age)),]
-              
-pander(table(support$Age<=mean(support$Age), support$Order))
-pander(table(support$Age<=mean(support$Age), support$Sex))
+pander(table(support$Age<=ageSplit, support$Order))
+pander(table(support$Age<=ageSplit, support$Sex))
 
-pander(table(youngsupport$Sex,youngsupport$Order), caption="Infants younger than mean(support$Age) months")
-pander(table(oldsupport$Sex,oldsupport$Order), caption="Infants older than mean(support$Age) months")
+pander(table(youngsupport$Sex,youngsupport$Order), caption=paste("Infants younger than", round(ageSplit,2), "months"))
+pander(table(oldsupport$Sex,oldsupport$Order), caption=paste("Infants older than", round(ageSplit,2), "months"))
 ```
 
-There were `r length(youngsupport$ContactTest.Average)` less than or equal to mean(support$Age) months old.
-There were `r length(oldsupport$ContactTest.Average)` greater than or equal to mean(support$Age) months old.
+There were `r length(youngsupport$ContactTest.Average)` less than or equal to `r round(ageSplit,2)` months old.
+There were `r length(oldsupport$ContactTest.Average)` greater than or equal to `r round(ageSplit,2)` months old.
 
 #Bar Graph: Mean Looking Time across Trials (Young vs Old)
 ```{r young_vs_old, fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6}
-means <- matrix(c(mean(youngsupport$ContactTest.Average), mean(youngsupport$NoContactTest.Average), mean(oldsupport$ContactTest.Average), mean(oldsupport$NoContactTest.Average)),ncol=2,byrow=F)
-se <- matrix(c(s.error(youngsupport$ContactTest.Average), s.error(youngsupport$NoContactTest.Average), s.error(oldsupport$ContactTest.Average), s.error(oldsupport$NoContactTest.Average)),ncol=2,byrow=F)
-
-colnames(means) <- c("< mean(support$Age) months","> mean(support$Age) months")
-rownames(means) <- c("Contact","No Contact")
-means <- as.table(means)
-meansR <- round(means,2)
-g.range = range(0,ceiling(max(means))+20)
-
-plot.new()
-barCenters <- barplot(means, col=c(conCol,nocCol), ylab = "Mean Looking Time (sec)", legend = rownames(means), beside = TRUE, ylim=g.range)
-arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
-text(barCenters,means+se+1.5,label=meansR)
-
-pander(t.test(oldsupport$NoContactTest.Average,oldsupport$ContactTest.Average,paired=TRUE))
+barplot_means(meanvals = c(mean(youngsupport$ContactTest.Average), 
+                           mean(oldsupport$ContactTest.Average),
+                           mean(youngsupport$NoContactTest.Average),
+                           mean(oldsupport$NoContactTest.Average)),
+              se.vals = c(s.error(youngsupport$ContactTest.Average), 
+                          s.error(oldsupport$ContactTest.Average), 
+                          s.error(youngsupport$NoContactTest.Average),
+                          s.error(oldsupport$NoContactTest.Average)),
+              nclusters = 2,
+              clusternames = c(paste("<",round(ageSplit,2),"months"),
+                               paste(">",round(ageSplit,2),"months")),              
+              groupnames = c("Contact", "No Contact"),
+              groupcolors = c(conCol,nocCol))
 ```
 
 #Bar Graph: Mean Looking Time on First Trial (Young vs Old)
 ```{r young_vs_old_t1,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6}
-means <- matrix(c(mean(youngsupport$ContactTest1), mean(youngsupport$NoContactTest1), mean(oldsupport$ContactTest1), mean(oldsupport$NoContactTest1)),ncol=2,byrow=F)
-se <- matrix(c(s.error(youngsupport$ContactTest1), s.error(youngsupport$NoContactTest1), s.error(oldsupport$ContactTest1), s.error(oldsupport$NoContactTest1)),ncol=2,byrow=F)
-
-colnames(means) <- c("< mean(support$Age) months","> mean(support$Age) months")
-rownames(means) <- c("Contact","No Contact")
-means <- as.table(means)
-meansR <- round(means,2)
-g.range = range(0,ceiling(max(means))+20)
-
-plot.new()
-barCenters <- barplot(means, col=c(conCol,nocCol), ylab = "Mean Looking Time (sec)", legend = rownames(means), beside = TRUE, ylim=g.range)
-arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
-text(barCenters,means+se+1.5,label=meansR)
+barplot_means(meanvals = c(mean(youngsupport$ContactTest1), 
+                           mean(oldsupport$ContactTest1), 
+                           mean(youngsupport$NoContactTest1),
+                           mean(oldsupport$NoContactTest1)),
+              se.vals = c(s.error(youngsupport$ContactTest1), 
+                          s.error(oldsupport$ContactTest1), 
+                          s.error(youngsupport$NoContactTest1), 
+                          s.error(oldsupport$NoContactTest1)),
+              nclusters = 2,
+              clusternames = c(paste("<",round(ageSplit,2),"months"),
+                               paste(">",round(ageSplit,2),"months")),              
+              groupnames = c("Contact", "No Contact"),
+              groupcolors = c(conCol,nocCol))
 ```
 
 #Bar Graph: Mean Looking Time on Third Trial (Young vs Old)
 ```{r young_vs_old_t3,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6, include=FALSE}
-means <- matrix(c(mean(youngsupport$ContactTest3), mean(youngsupport$NoContactTest3), mean(oldsupport$ContactTest3), mean(oldsupport$NoContactTest3)),ncol=2,byrow=F)
-se <- matrix(c(s.error(youngsupport$ContactTest3), s.error(youngsupport$NoContactTest3), s.error(oldsupport$ContactTest3), s.error(oldsupport$NoContactTest3)),ncol=2,byrow=F)
-
-colnames(means) <- c("< mean(support$Age) months","> mean(support$Age) months")
-rownames(means) <- c("Contact","No Contact")
-means <- as.table(means)
-meansR <- round(means,2)
-g.range = range(0,ceiling(max(means))+20)
-
-plot.new()
-barCenters <- barplot(means, col=c(conCol,nocCol), ylab = "Mean Looking Time (sec)", legend = rownames(means), beside = TRUE, ylim=g.range)
-arrows(barCenters, means-se, barCenters, means+se, lwd = 2, length=0.05, angle=90, code=3)
-text(barCenters,means+se+1.5,label=meansR)
+barplot_means(meanvals = c(mean(youngsupport$ContactTest3), 
+                           mean(oldsupport$ContactTest3),
+                           mean(youngsupport$NoContactTest3),
+                           mean(oldsupport$NoContactTest3)),
+              se.vals = c(s.error(youngsupport$ContactTest3), 
+                          s.error(oldsupport$ContactTest3),
+                          s.error(youngsupport$NoContactTest3),
+                          s.error(oldsupport$NoContactTest3)),
+              nclusters = 2,
+              clusternames = c(paste("<",round(ageSplit,2),"months"),
+                               paste(">",round(ageSplit,2),"months")),              
+              groupnames = c("Contact", "No Contact"),
+              groupcolors = c(conCol,nocCol))
 ```
