@@ -189,16 +189,17 @@ boxplot(support$ContactTest1,
         support$NoContactTest1, 
         support$NoContactTest2, 
         support$ContactTest3, 
-        col = c(rep(conCol,3),rep(nocCol,3)))
+        col = c(rep(conCol,3),rep(nocCol,3)),
+        ylab = 'Looking Time')
 ```
 
 ```{r histograms, fig.width = 8, fig.height = 5}
-hist(support$ContactTest1, col = conCol, breaks = 10)
-hist(support$ContactTest2, col = conCol, breaks = 10)
-hist(support$ContactTest3, col = conCol, breaks = 10)
-hist(support$NoContactTest1, col = nocCol, breaks = 10)
-hist(support$NoContactTest2, col = nocCol, breaks = 10)
-hist(support$NoContactTest3, col = nocCol, breaks = 10)
+hist(support$ContactTest1, col = conCol, breaks = 10, main = "Contact Test 1", xlab="Looking Times")
+hist(support$ContactTest2, col = conCol, breaks = 10, main = "Contact Test 2", xlab="Looking Times")
+hist(support$ContactTest3, col = conCol, breaks = 10, main = "Contact Test 3", xlab="Looking Times")
+hist(support$NoContactTest1, col = nocCol, breaks = 10, main = "No Contact Test 1", xlab="Looking Times")
+hist(support$NoContactTest2, col = nocCol, breaks = 10, main = "No Contact Test 2", xlab="Looking Times")
+hist(support$NoContactTest3, col = nocCol, breaks = 10, main = "No Contact Test 3", xlab="Looking Times")
 ```
 
 #Non-Parametric Analyses
@@ -524,8 +525,8 @@ There was no difference in looking times between the first Possible test event (
 Positive values indicate dishabituation (renewed interest), negative values indicate no dishabituation
 
 ```{r dishab_hist}
-hist(poss.first$dishab, col = conCol, breaks = 10, main = "Dishabituation to first Possible Test Trial")
-hist(imp.first$dishab, col = nocCol, breaks = 10, main = "Dishabituation to first Impossible Test Trial")
+hist(poss.first$dishab, col = conCol, breaks = 10, main = "Dishabituation to first Possible Test Trial", xlab = "Dishabituation")
+hist(imp.first$dishab, col = nocCol, breaks = 10, main = "Dishabituation to first Impossible Test Trial", xlab = "Dishabituation")
 ```
 
 ##Bar Graph: Median of Dishabituation
@@ -591,7 +592,18 @@ barplot_means(meanvals = c(mean(youngsupport$ContactTest.Average),
                                paste(">",round(ageSplit,2),"months")),              
               groupnames = c("Contact", "No Contact"),
               groupcolors = c(conCol,nocCol))
+
+t.avg.old = t.test(oldsupport$ContactTest.Average,oldsupport$NoContactTest.Average,paired=T)
+t.avg.young = t.test(youngsupport$ContactTest.Average,youngsupport$NoContactTest.Average,paired=T)
 ```
+
+For infants older than `r round(ageSplit,2)` months, there was no difference in looking times between the first Possible test event (M =
+`r round(mean(oldsupport$ContactTest.Average), 2)`) and the first Impossible event (M = 
+`r round(mean(oldsupport$NoContactTest.Average),2)`),  (t(`r round(t.avg.old$parameter,2)`) = `r round(t.avg.old$statistic,2)`,  *p* = `r round(t.avg.old$p.value,2)`).
+
+For infants younger than `r round(ageSplit,2)` months, there was no difference in looking times between the second Possible test event (M = 
+`r round(mean(youngsupport$ContactTest.Average),2)`) and the second Impossible event (M = 
+`r round(mean(youngsupport$NoContactTest.Average),2)`),  (t(`r round(t.avg.young$parameter,2)`) = `r round(t.avg.young$statistic,2)`,  *p* = `r round(t.avg.young$p.value,2)`).
 
 #Bar Graph: Mean Looking Time on First Trial (Young vs Old)
 ```{r young_vs_old_t1,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6}
@@ -608,10 +620,21 @@ barplot_means(meanvals = c(mean(youngsupport$ContactTest1),
                                paste(">",round(ageSplit,2),"months")),              
               groupnames = c("Contact", "No Contact"),
               groupcolors = c(conCol,nocCol))
+
+t1.young = t.test(youngsupport$NoContactTest1,youngsupport$ContactTest1,paired=TRUE)
+t1.old = t.test(oldsupport$NoContactTest1,oldsupport$ContactTest1,paired=TRUE)
 ```
 
+For infants younger than `r round(ageSplit,2)` months, there was no difference in looking times between the first Possible test event (M =
+`r round(mean(youngsupport$ContactTest1), 2)`) and the first Impossible event (M = 
+`r round(mean(youngsupport$NoContactTest1),2)`),  (t(`r round(t1.young$parameter,2)`) = `r round(t1.young$statistic,2)`,  *p* = `r round(t1.young$p.value,2)`).
+
+For infants older than `r round(ageSplit,2)` months, there was no difference in looking times between the first Possible test event (M =
+`r round(mean(oldsupport$ContactTest1), 2)`) and the first Impossible event (M = 
+`r round(mean(oldsupport$NoContactTest1),2)`),  (t(`r round(t1.old$parameter,2)`) = `r round(t1.old$statistic,2)`,  *p* = `r round(t1.old$p.value,2)`).
+
 #Bar Graph: Mean Looking Time on Third Trial (Young vs Old)
-```{r young_vs_old_t3,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6, include=FALSE}
+```{r young_vs_old_t3,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6}
 barplot_means(meanvals = c(mean(youngsupport$ContactTest3), 
                            mean(oldsupport$ContactTest3),
                            mean(youngsupport$NoContactTest3),
@@ -625,4 +648,16 @@ barplot_means(meanvals = c(mean(youngsupport$ContactTest3),
                                paste(">",round(ageSplit,2),"months")),              
               groupnames = c("Contact", "No Contact"),
               groupcolors = c(conCol,nocCol))
+
+t3.young = t.test(youngsupport$NoContactTest3,youngsupport$ContactTest3,paired=TRUE)
+t3.old = t.test(oldsupport$NoContactTest3,oldsupport$ContactTest3,paired=TRUE)
+
 ```
+
+For infants younger than `r round(ageSplit,2)` months, there was no difference in looking times between the third Possible test event (M =
+`r round(mean(youngsupport$ContactTest3), 2)`) and the first Impossible event (M = 
+`r round(mean(youngsupport$NoContactTest3),2)`),  (t(`r round(t3.young$parameter,2)`) = `r round(t3.young$statistic,2)`,  *p* = `r round(t3.young$p.value,2)`).
+
+For infants older than `r round(ageSplit,2)` months, there was no difference in looking times between the third Possible test event (M =
+`r round(mean(oldsupport$ContactTest3), 2)`) and the first Impossible event (M = 
+`r round(mean(oldsupport$NoContactTest3),2)`),  (t(`r round(t3.old$parameter,2)`) = `r round(t3.old$statistic,2)`,  *p* = `r round(t3.old$p.value,2)`).
