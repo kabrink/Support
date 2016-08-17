@@ -597,13 +597,15 @@ t.avg.old = t.test(oldsupport$ContactTest.Average,oldsupport$NoContactTest.Avera
 t.avg.young = t.test(youngsupport$ContactTest.Average,youngsupport$NoContactTest.Average,paired=T)
 ```
 
-For infants older than `r round(ageSplit,2)` months, there was no difference in looking times between the first Possible test event (M =
-`r round(mean(oldsupport$ContactTest.Average), 2)`) and the first Impossible event (M = 
-`r round(mean(oldsupport$NoContactTest.Average),2)`),  (t(`r round(t.avg.old$parameter,2)`) = `r round(t.avg.old$statistic,2)`,  *p* = `r round(t.avg.old$p.value,2)`).
 
 For infants younger than `r round(ageSplit,2)` months, there was no difference in looking times between the second Possible test event (M = 
 `r round(mean(youngsupport$ContactTest.Average),2)`) and the second Impossible event (M = 
 `r round(mean(youngsupport$NoContactTest.Average),2)`),  (t(`r round(t.avg.young$parameter,2)`) = `r round(t.avg.young$statistic,2)`,  *p* = `r round(t.avg.young$p.value,2)`).
+
+For infants older than `r round(ageSplit,2)` months, there was no difference in looking times between the first Possible test event (M =
+`r round(mean(oldsupport$ContactTest.Average), 2)`) and the first Impossible event (M = 
+`r round(mean(oldsupport$NoContactTest.Average),2)`),  (t(`r round(t.avg.old$parameter,2)`) = `r round(t.avg.old$statistic,2)`,  *p* = `r round(t.avg.old$p.value,2)`).
+
 
 #Bar Graph: Mean Looking Time on First Trial (Young vs Old)
 ```{r young_vs_old_t1,fig.path='Figures/', dev=c('png','postscript'), fig.width = 6.5, fig.height = 6}
