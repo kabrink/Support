@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE, fig.keep='last', fig.align='center')
 ```
 
 ```{r install_libraries}
@@ -193,7 +193,7 @@ boxplot(support$ContactTest1,
         ylab = 'Looking Time')
 ```
 
-```{r histograms, fig.width = 8, fig.height = 5}
+```{r histograms, fig.width = 8, fig.height = 5, fig.keep='all'}
 hist(support$ContactTest1, col = conCol, breaks = 10, main = "Contact Test 1", xlab="Looking Times")
 hist(support$ContactTest2, col = conCol, breaks = 10, main = "Contact Test 2", xlab="Looking Times")
 hist(support$ContactTest3, col = conCol, breaks = 10, main = "Contact Test 3", xlab="Looking Times")
@@ -204,7 +204,7 @@ hist(support$NoContactTest3, col = nocCol, breaks = 10, main = "No Contact Test 
 
 #Non-Parametric Analyses
 ##Bar Graph: Median by Test Trial
-```{r barplot_median_trial, fig.path='Figures/', dev=c('png','postscript'), fig.width = 6, fig.height = 6}
+```{r barplot_median_trial, fig.path='Figures/', dev=c('png','postscript'), fig.height=6, fig.width=6}
 #formats medians for all test trials across all participants into a matrix
 barplot_medians(vals=c(median(support$ContactTest1),
                        median(support$ContactTest2),
@@ -527,6 +527,11 @@ Positive values indicate dishabituation (renewed interest), negative values indi
 ```{r dishab_hist}
 hist(poss.first$dishab, col = conCol, breaks = 10, main = "Dishabituation to first Possible Test Trial", xlab = "Dishabituation")
 hist(imp.first$dishab, col = nocCol, breaks = 10, main = "Dishabituation to first Impossible Test Trial", xlab = "Dishabituation")
+
+boxplot(poss.first$dishab, 
+        imp.first$dishab, 
+        col = c(conCol,nocCol),
+        ylab = 'Looking Time')
 ```
 
 ##Bar Graph: Median of Dishabituation
@@ -657,9 +662,9 @@ t3.old = t.test(oldsupport$NoContactTest3,oldsupport$ContactTest3,paired=TRUE)
 ```
 
 For infants younger than `r round(ageSplit,2)` months, there was no difference in looking times between the third Possible test event (M =
-`r round(mean(youngsupport$ContactTest3), 2)`) and the first Impossible event (M = 
+`r round(mean(youngsupport$ContactTest3), 2)`) and the third Impossible event (M = 
 `r round(mean(youngsupport$NoContactTest3),2)`),  (t(`r round(t3.young$parameter,2)`) = `r round(t3.young$statistic,2)`,  *p* = `r round(t3.young$p.value,2)`).
 
 For infants older than `r round(ageSplit,2)` months, there was no difference in looking times between the third Possible test event (M =
-`r round(mean(oldsupport$ContactTest3), 2)`) and the first Impossible event (M = 
+`r round(mean(oldsupport$ContactTest3), 2)`) and the third Impossible event (M = 
 `r round(mean(oldsupport$NoContactTest3),2)`),  (t(`r round(t3.old$parameter,2)`) = `r round(t3.old$statistic,2)`,  *p* = `r round(t3.old$p.value,2)`).
