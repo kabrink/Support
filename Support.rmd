@@ -92,6 +92,7 @@ barplot_means <- function(meanvals,se.vals,nclusters,clusternames,groupnames,gro
 ```
 
 ```{r load_file}
+
 filename="/Volumes/lsa-research01/ALL STUDIES/Current Studies/Support/Support 3.0/Support - Data v3.2.sav"
 support <- spss.get(filename,datevars=c("DOB","DOT")) #recognize DOB and DOT files as date variables
 ```
